@@ -3,12 +3,12 @@ import notesRoutes from "./routes/notesRoutes.js";
 import { connectDB } from "./config/db.js";
 import dotenv from "dotenv";
 
-connectDB();
 dotenv.config();
 
 const app = express();
 
 app.use("/api/notes", notesRoutes);
+connectDB();
 
 // app.get('/api/notes', (req, res) => {
 //     res.send("Running Server Successfully");
