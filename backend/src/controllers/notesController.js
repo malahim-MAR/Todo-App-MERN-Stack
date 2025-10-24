@@ -13,10 +13,10 @@ export const getAllNotes = async (req, res) => {
 export const createNote = async (req, res) => {
   try {
     const { title, content } = req.body;
-    const newNote = new Note({ title, content });
+    const note = new Note({ title, content });
 
-    await newNote.save();
-    res.status(201).send("Your Create Note Successfully");
+    const savedNote = await note.save();
+    res.status(201).send(savedNote);
   } catch (error) {
     console.error("Error On createNote Method", error);
     res.status(500).json({ message: "Server Error" });
