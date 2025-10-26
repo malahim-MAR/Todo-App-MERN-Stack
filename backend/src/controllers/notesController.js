@@ -1,5 +1,6 @@
 import Note from "../models/Note.js";
 
+// Get All Notes
 export const getAllNotes = async (req, res) => {
   try {
     const note = await Note.find();
@@ -9,6 +10,23 @@ export const getAllNotes = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+// Get Note By ID
+
+export const getNoteById = async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: "Note Not Found" });
+    }
+    res.status(200).json(note);
+  } catch (error) {
+    console.error("Error On getNoteById Method", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// Create Note
 
 export const createNote = async (req, res) => {
   try {
@@ -22,6 +40,8 @@ export const createNote = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+
+// Update Note
 
 export const updateNote = async (req, res) => {
   try {
@@ -41,6 +61,9 @@ export const updateNote = async (req, res) => {
   }
   res.status(200).send("Your Note Update Successfully");
 };
+
+// Delete Note
+
 export const deleteNote = async (req, res) => {
   try {
     const deletedNote = await Note.findByIdAndDelete(req.params.id);
