@@ -1,74 +1,106 @@
-import React, { useState } from 'react'
-import NoteCard from '../Components/NoteCard'
+import React, { useState, useEffect } from 'react';
+import NoteCard from '../Components/NoteCard';
 import RateLimiter from '../Components/RateLimiter';
-import { useEffect } from 'react';
 import axios from 'axios';
-import { SquarePen, Trash2 } from 'lucide-react'
-
-
+import { SquarePen, Trash2 } from 'lucide-react';
 
 const HomePage = () => {
-    const [isRateLimited, setIsRateLimited] = useState(true);
+    const [isRateLimited, setIsRateLimited] = useState(false);
     const [loading, setLoading] = useState(true);
     const [notes, setNotes] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchNote = async () => {
+        const fetchNotes = async () => {
             try {
-                const res = await axios.get("http://localhost:5001/api/notes");
-                console.log(res.data);
+                setLoading(true);
+                const res = await axios.get('http://localhost:5001/api/notes');
                 setNotes(res.data);
                 setIsRateLimited(false);
-                setLoading(false);
-            } catch (error) {
-                console.log("Error fetching note:", error);
-                if (error.response?.status === 429) {
+                setError(null);
+            } catch (err) {
+                console.error('Error fetching notes:', err);
+
+                if (err.response?.status === 429) {
                     setIsRateLimited(true);
-                    console.log("You are being rate limited.");
                 } else {
                     setIsRateLimited(false);
+                    setError('Failed to load notes. Try again later.');
                 }
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchNote();
+        fetchNotes();
     }, []);
 
+    // --- Render logic ---
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <span className="loading loading-dots loading-md"></span>
+            </div>
+        );
+    }
+
+    if (isRateLimited) {
+        return (
+            <>
+                <div className='h-[100vh]'>
+                    <RateLimiter />
+
+                </div>
+            </>
+        )
+
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col justify-center items-center h-screen text-center text-error">
+                <p>{error}</p>
+                <button
+                    className="btn btn-sm mt-3"
+                    onClick={() => window.location.reload()}
+                >
+                    Retry
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen relative">
-            {isRateLimited && <RateLimiter />}
-            {loading && <div className="flex justify-center items-center h-screen"> <span class="loading loading-dots loading-sm"></span>
-            </div>}
-            {notes.length > 0 && !isRateLimited && (
-                <div className="p-7 flex gap-5 flex-wrap justify-around items-center" >
-                    {notes.map((note) => (
-                        <div key={note.id} className="card w-96 bg-base-100 card-sm shadow-sm  border-base-200" style={{ borderTop: "3px solid #3DA74B" }}>
-                            <div className="card-body">
-                                <h2 className="card-title">{note.title}</h2>
-                                <p>{note.content}</p>
-                                <div className="flex justify-between align-middle card-actions">
-                                    <div>
-                                        <p className='text-grey-300'>{note.updatedAt}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button className="cursor-pointer"><Trash2 size={14} color='red' /></button>
-                                        <button className="cursor-pointer"><SquarePen size={14} /></button>
-                                    </div>
+        <div className="min-h-screen p-7 flex flex-wrap justify-around gap-5 bg-base-200">
+            {notes.length > 0 ? (
+                notes.map((note) => (
+                    <div
+                        key={note.id}
+                        className="card w-96 bg-base-100 shadow-sm border border-base-300"
+                        style={{ borderTop: '3px solid #3DA74B' }}
+                    >
+                        <div className="card-body">
+                            <h2 className="card-title">{note.title}</h2>
+                            <p>{note.content}</p>
+                            <div className="flex justify-between items-center card-actions">
+                                <small className="text-gray-400">{note.updatedAt}</small>
+                                <div className="flex gap-2">
+                                    <button className="btn btn-ghost btn-xs text-error">
+                                        <Trash2 size={14} />
+                                    </button>
+                                    <button className="btn btn-ghost btn-xs">
+                                        <SquarePen size={14} />
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))
+            ) : (
+                <p className="text-center text-gray-500 mt-10">No notes available.</p>
             )}
         </div>
-
-
-
     );
+};
 
-}
-
-export default HomePage
+export default HomePage;
