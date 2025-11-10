@@ -51,30 +51,37 @@ export const updateNote = async (req, res) => {
       { title, content },
       { new: true }
     );
+
     if (!UpdatedNote) {
+      // return ensures only one response is sent
       return res.status(404).json({ message: "Note Not Found" });
     }
-    res.status(200).json(UpdatedNote);
+
+    // single valid success response
+    return res.status(200).json({
+      message: "Note updated successfully",
+      note: UpdatedNote,
+    });
   } catch (error) {
     console.error("Error On updateNote Method", error);
-    res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ message: "Server Error" });
   }
-  res.status(200).send("Your Note Update Successfully");
 };
 
 // Delete Note
-
 export const deleteNote = async (req, res) => {
   try {
     const deletedNote = await Note.findByIdAndDelete(req.params.id);
+
     if (!deletedNote) {
-      res.status(404).json({ message: "Note Not Found" });
+      // returning here prevents second response
+      return res.status(404).json({ message: "Note Not Found" });
     }
-    res.status(200).json({ message: "Note Deleted Successfully" });
+
+    // single success response
+    return res.status(200).json({ message: "Note Deleted Successfully" });
   } catch (error) {
     console.error("Error On deleteNote Method", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-
-  res.status(200).send("Your Delete Note Successfully");
 };
