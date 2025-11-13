@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import toast from "react-hot-toast";
+import { Link, useParams } from "react-router";
 
 const NoteDetailPage = () => {
   const { id } = useParams();
@@ -27,11 +28,36 @@ const NoteDetailPage = () => {
     fetchNote();
   }, [id]);
 
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    console.log("Save Button Clicked")
+    console.log("title:", newSaveTitle)
+    console.log("content:", newSaveContent)
+    try {
+      setLoading(true)
+      await axios.put(`http://localhost:5001/api/notes/${id}`, {
+        title: newSaveTitle,
+        content: newSaveContent,
+      });
+
+      toast.success("Note Updated Succesfully")
+    } catch (error) {
+      console.log("Error Not Saving", error)
+    } finally {
+      setLoading(false)
+
+    }
+
+  }
+
   if (loading) return <p className="text-forest-800">Loading...</p>;
   if (!noteDetail) return <p className="text-red-600">Note not found.</p>;
 
   return (
     <div className="p-6 max-w-lg mx-auto bg-forest-100 rounded-lg shadow-md">
+      <div>
+        <Link to={'/'} className="btn  btn-secondary">Back to Home</Link>
+      </div>
       <form className="flex flex-col gap-4">
         <div className="form-control w-full">
           <label className="label">
@@ -55,7 +81,7 @@ const NoteDetailPage = () => {
             onChange={(e) => setNewSaveContent(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary">Save</button>
+        <button className="btn btn-primary" onClick={handleEdit}>Save</button>
       </form>
     </div>
   );
